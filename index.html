@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>區塊鏈碳權交易系統</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .container { display: flex; flex-direction: column; }
+        .top-panel { display: flex; justify-content: space-between; }
+        .left-panel, .right-panel { width: 48%; }
+        button { margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .bottom-panel { margin-top: 20px; }
+        .message-cell { width: 40%; word-break: break-all; }
+        .address-cell { width: 20%; word-break: break-all; }
+        .id-cell, .amount-cell { width: 10%; }
+        .connect-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <button id="connectButton" class="connect-button">連接 MetaMask</button>
+    <h1>區塊鏈碳權交易系統</h1>
+    <div class="container">
+        <div id="accountInfo"></div>
+        <div id="contractInfo"></div>
+        <div class="top-panel">
+            <div class="left-panel">
+                <h2>鑄造代幣</h2>
+                <input type="text" id="mintAmount" placeholder="鑄造數量">
+                <input type="text" id="mintAddress" placeholder="接收地址">
+                <button id="mintButton">鑄造</button>
+                <hr>
+                <h2>抵免代幣</h2>
+                <input type="text" id="redeemAmount" placeholder="抵免數量">
+                <input type="text" id="redeemMessage" placeholder="抵免信息（可選）">
+                <button id="redeemButton">抵免</button>
+            </div>
+            <div class="right-panel">
+                <h2>查詢抵免記錄</h2>
+                <input type="text" id="redemptionId" placeholder="抵免 ID">
+                <button id="getRedemptionButton">查詢</button>
+                <div id="redemptionInfo"></div>
+                <hr>
+                <h2>查詢地址抵免記錄</h2>
+                <input type="text" id="addressToQuery" placeholder="輸入要查詢的地址">
+                <button id="queryAddressButton">查詢地址抵免</button>
+                <div id="addressRedemptionInfo"></div>
+            </div>
+        </div>
+        <div class="bottom-panel">
+            <h2>最近5筆抵免記錄</h2>
+            <table id="recentRedemptions">
+                <thead>
+                    <tr>
+                        <th class="id-cell">抵免ID</th>
+                        <th class="address-cell">抵免者地址</th>
+                        <th class="amount-cell">抵免數量</th>
+                        <th class="message-cell">抵免信息</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

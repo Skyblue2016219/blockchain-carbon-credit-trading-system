@@ -2,7 +2,7 @@
 
 這是一個基於以太坊 EVM 的區塊鏈碳權交易系統，預設在 Holesky 測試網上運行。本系統允許用戶進行碳權代幣的交易、抵免和管理，並支持添加抵免信息。
 
-## 功能特點
+## 功能
 
 1. 連接 MetaMask 錢包
 2. 鑄造碳權代幣（僅限合約管理員）
@@ -22,8 +22,8 @@
 
 1. 克隆此儲存庫：
    ```bash
-   git clone https://github.com/your-username/blockchain-carbon-trading.git
-   cd blockchain-carbon-trading
+   git clone https://github.com/Skyblue2016219/Blockchain-Carbon-Credit-Trading-System.git
+   cd Blockchain-Carbon-Credit-Trading-System
    ```
 
 2. 部署智能合約：
@@ -35,7 +35,8 @@
 
 4. 啟動應用：
    - 使用本地伺服器（如 Live Server VS Code 擴展）來運行專案
-   - 或者直接在瀏覽器中打開 `index.html`
+   - 注意：不要直接打開 index.html 文件，這會導致 MetaMask 無法正常運行
+   - 必須使用託管插件或本地伺服器來運行專案，以確保 MetaMask 可以正常工作
 
 ## 詳細使用說明
 

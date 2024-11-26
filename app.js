@@ -5,7 +5,450 @@ const contractAddress = "0x9494ed8b95297a1487ddd0cffa12a1461b4b9667";
 
 // 使用完整的 JSON 格式的 ABI（應用程序二進制接口）
 const contractABI = [
-    // ... (保留完整的 ABI)
+    // 事件
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "redeemer",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "string",
+                "name": "message",
+                "type": "string"
+            }
+        ],
+        "name": "Redeemed",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Approval",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "Paused",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Transfer",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": false,
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "Unpaused",
+        "type": "event"
+    },
+    // 函數
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "initialOwner",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "internalType": "uint8",
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "id",
+                "type": "uint256"
+            }
+        ],
+        "name": "getRedemptionById",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "redeemer",
+                "type": "address"
+            }
+        ],
+        "name": "getRedemptionIdsByAddress",
+        "outputs": [
+            {
+                "internalType": "uint256[]",
+                "name": "",
+                "type": "uint256[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getLatestRedemptionId",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "mint",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "pause",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "paused",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "string",
+                "name": "message",
+                "type": "string"
+            }
+        ],
+        "name": "redeem",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "newOwner",
+                "type": "address"
+            }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "unpause",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
 ];
 
 // 定義全局變量
@@ -113,88 +556,89 @@ async function updateBalance() {
 // 更新最近的抵免記錄
 async function updateRecentRedemptions() {
     try {
-        const tbody = document.querySelector('#recentRedemptions tbody');
+        const tbody = document.getElementById('recentRedemptions');
+        if (!tbody) {
+            console.error("找不到表格體元素");
+            return;
+        }
+        
         tbody.innerHTML = '';
+        console.log("清空表格完成");
 
-        // 如果沒有連接錢包，使用默認的 Web3 提供者
+        // 確保 web3 實例存在
         if (!web3) {
-            web3 = new Web3('https://ethereum-holesky.publicnode.com'); // 使用公共節點
+            web3 = new Web3('https://ethereum-holesky.publicnode.com');
             contract = new web3.eth.Contract(contractABI, contractAddress);
+            console.log("創建新的 Web3 實例");
         }
 
         // 獲取最新的抵免ID
         const latestId = await contract.methods.getLatestRedemptionId().call();
-        console.log("最新的抵免ID:", latestId);
+        console.log("最新抵免ID:", latestId);
 
-        const redemptions = [];
-        let currentId = latestId;
+        if (latestId === '0') {
+            console.log("還沒有抵免記錄");
+            tbody.innerHTML = '<tr><td colspan="4">暫無抵免記錄</td></tr>';
+            return;
+        }
 
-        // 只獲取最新的5條記錄
-        while (redemptions.length < 5 && currentId > 0) {
+        // 獲取所有 Redeemed 事件
+        const currentBlock = await web3.eth.getBlockNumber();
+        const events = await contract.getPastEvents('Redeemed', {
+            fromBlock: Math.max(0, currentBlock - 50000),
+            toBlock: 'latest'
+        });
+
+        console.log("獲取到的事件:", events);
+
+        const redemptions = new Set();
+        let currentId = parseInt(latestId);
+        let count = 0;
+
+        // 獲取最新的5條記錄
+        while (count < 5 && currentId > 0) {
             try {
+                console.log(`正在獲取ID ${currentId} 的記錄`);
                 const result = await contract.methods.getRedemptionById(currentId).call();
-                const redeemer = result[0];
-                const amount = result[1];
-
-                const currentBlock = await web3.eth.getBlockNumber();
-                const events = await getEventsInRange('Redeemed', currentId, currentBlock);
-
-                let message = "";
+                
+                // 在事件列表中查找對應的事件
                 const event = events.find(e => e.returnValues.id === currentId.toString());
-                if (event) {
-                    message = event.returnValues.message;
+                const message = event ? event.returnValues.message : "";
+                
+                if (result[0] !== '0x0000000000000000000000000000000000000000') {
+                    const redemptionKey = `${currentId}-${result[0]}-${result[1]}`;
+                    if (!redemptions.has(redemptionKey)) {
+                        redemptions.add(redemptionKey);
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${currentId}</td>
+                            <td>${result[0]}</td>
+                            <td>${web3.utils.fromWei(result[1], 'ether')}</td>
+                            <td>${message || ''}</td>
+                        `;
+                        tbody.appendChild(row);
+                        count++;
+                        console.log(`成功添加ID ${currentId} 的記錄，消息: ${message}`);
+                    }
                 }
-
-                redemptions.push({ id: currentId, redeemer, amount, message });
             } catch (error) {
-                console.error(`獲取抵免ID ${currentId} 的信息失敗:`, error);
+                console.error(`獲取ID ${currentId} 的記錄失敗:`, error);
             }
             currentId--;
         }
 
-        // 顯示獲取到的記錄（最多5條）
-        redemptions.forEach(redemption => {
-            const row = tbody.insertRow();
-            row.insertCell(0).textContent = redemption.id.toString();
-            row.insertCell(1).textContent = redemption.redeemer;
-            row.insertCell(2).textContent = web3.utils.fromWei(redemption.amount, 'ether');
-            row.insertCell(3).textContent = redemption.message;
+        if (tbody.children.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4">暫無抵免記錄</td></tr>';
+        }
 
-            row.cells[0].className = 'id-cell';
-            row.cells[1].className = 'address-cell';
-            row.cells[2].className = 'amount-cell';
-            row.cells[3].className = 'message-cell';
-        });
-
-        console.log(`顯示了 ${redemptions.length} 條記錄`);
+        console.log(`成功顯示 ${count} 條記錄`);
     } catch (error) {
-        console.error("更新最近抵免記錄失敗:", error);
-    }
-}
-
-// 獲取指定範圍內的事件
-async function getEventsInRange(eventName, id, currentBlock) {
-    const maxBlockRange = 50000;
-    let fromBlock = Math.max(currentBlock - maxBlockRange, 0);
-    let toBlock = currentBlock;
-    let events = [];
-
-    while (fromBlock < toBlock) {
-        try {
-            const newEvents = await contract.getPastEvents(eventName, {
-                filter: { id: id.toString() }, // 確保過濾條件正確
-                fromBlock: fromBlock,
-                toBlock: Math.min(fromBlock + maxBlockRange, toBlock)
-            });
-            events = events.concat(newEvents);
-            fromBlock += maxBlockRange;
-        } catch (error) {
-            console.error(`獲取事件 ${eventName} 時出錯:`, error);
-            break;
+        console.error("更新抵免記錄時發生錯誤:", error);
+        const tbody = document.getElementById('recentRedemptions');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="4">載入記錄時發生錯誤</td></tr>';
         }
     }
-
-    return events;
 }
 
 // 鑄造新代幣
@@ -212,7 +656,7 @@ async function mint() {
     }
 }
 
-// 抵免代幣
+// 抵��代幣
 async function redeem() {
     const amount = document.getElementById('redeemAmount').value;
     const message = document.getElementById('redeemMessage').value;
@@ -244,7 +688,7 @@ async function redeem() {
         await updateRecentRedemptions(); // 確保這行存在
         
     } catch (error) {
-        console.error("抵免操作詳細錯誤:", error);
+        console.error("抵免操作��細錯誤:", error);
         handleError(error, "抵免失敗");
     }
 }
@@ -292,6 +736,8 @@ function handleError(error, defaultMessage) {
 // 頁面加載完成後執行的函數
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM 已加載，添加事件監聽器");
+    
+    // 連接按鈕事件監聽
     const connectButton = document.getElementById('connectButton');
     if (connectButton) {
         connectButton.addEventListener('click', connectWallet);
@@ -299,19 +745,42 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.error("未找到連接按鈕元素");
     }
-    document.getElementById('mintButton').addEventListener('click', mint);
-    document.getElementById('redeemButton').addEventListener('click', redeem);
-    document.getElementById('getRedemptionButton').addEventListener('click', getRedemption);
-    document.getElementById('queryAddressButton').addEventListener('click', queryAddressRedemptions);
 
-    // 確保在頁面加載時更新最近的抵免記錄
-    updateRecentRedemptions();
+    // 其他按鈕事件監聽
+    const redeemButton = document.getElementById('redeemButton');
+    if (redeemButton) {
+        redeemButton.addEventListener('click', redeem);
+    }
+    
+    const getRedemptionButton = document.getElementById('getRedemptionButton');
+    if (getRedemptionButton) {
+        getRedemptionButton.addEventListener('click', getRedemption);
+    }
+    
+    const queryAddressButton = document.getElementById('queryAddressButton');
+    if (queryAddressButton) {
+        queryAddressButton.addEventListener('click', queryAddressRedemptions);
+    }
+
+    // 初始化時嘗試更新最近的抵免記錄
+    try {
+        // 使用公共節點初始化 web3，這樣即使未連接錢包也能讀取數據
+        web3 = new Web3('https://ethereum-holesky.publicnode.com');
+        contract = new web3.eth.Contract(contractABI, contractAddress);
+        updateRecentRedemptions();
+    } catch (error) {
+        console.error("初始化時更新記錄失敗:", error);
+    }
 });
 
-// 定期更新最近的抵免記錄
+// 定期更新最近的抵免記錄（每30秒）
 setInterval(async () => {
-    if (contract) {
-        await updateRecentRedemptions();
+    if (web3 && contract) {
+        try {
+            await updateRecentRedemptions();
+        } catch (error) {
+            console.error("定期更新記錄失敗:", error);
+        }
     }
 }, 30000);
 
@@ -350,9 +819,3 @@ async function queryAddressRedemptions() {
         infoElement.innerText = "查詢失敗: " + (error.message || "未知錯誤，請檢查控制台");
     }
 }
-
-// 在 DOMContentLoaded 事件監聽器中添加新的按鈕事件
-document.addEventListener('DOMContentLoaded', function() {
-    // ... 現有代碼 ...
-    document.getElementById('queryAddressButton').addEventListener('click', queryAddressRedemptions);
-});

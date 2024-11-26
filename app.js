@@ -1,49 +1,44 @@
+// Web3 已經通過 CDN 在 HTML 中引入,所以這裡不需要再導入
+
 // 注意：請將以下合約地址替換為您自己部署的智能合約地址
-// 當前地址僅供示例，您需要將其更改為您在 Holesky 測試網上部署的實際合約地址
 const contractAddress = "0x9494ed8b95297a1487ddd0cffa12a1461b4b9667";
 
+// 使用完整的 JSON 格式的 ABI（應用程序二進制接口）
 const contractABI = [
-    "function mint(address to, uint256 amount) external",
-    "function redeem(uint256 amount, string memory message) external",
-    "function getRedemptionById(uint256 id) external view returns (address, uint256)",
-    "function balanceOf(address account) external view returns (uint256)",
-    "function getLatestRedemptionId() external view returns (uint256)",
-    "event Redeemed(address indexed redeemer, uint256 amount, uint256 id, string message)",
-    "function getRedemptionIdsByAddress(address redeemer) external view returns (uint256[] memory)"
+    // ... (保留完整的 ABI)
 ];
 
-let provider, signer, contract;
+// 定義全局變量
+let web3, contract;
 
+// 連接錢包函數
 async function connectWallet() {
     console.log("開始連接錢包");
     if (typeof window.ethereum !== 'undefined') {
         try {
             console.log("檢測到 MetaMask，嘗試請求帳戶訪問權限");
-            const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-            console.log("獲得的帳戶:", accounts);
-            
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            signer = provider.getSigner();
-            contract = new ethers.Contract(contractAddress, contractABI, signer);
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            web3 = new Web3(window.ethereum);
 
-            const network = await provider.getNetwork();
-            console.log("當前網絡:", network);
-            if (network.chainId !== 17000) {
-                console.log("需要切換到 Holesky 測試網");
-                await switchToHolesky();
-            }
+            // 在創建合約實例之前，先檢查並切換網絡
+            await checkNetwork();
 
-            const address = await signer.getAddress();
+            // 創建合約實例
+            contract = new web3.eth.Contract(contractABI, contractAddress);
+
+            const accounts = await web3.eth.getAccounts();
+            const address = accounts[0];
             console.log("連接的地址:", address);
             document.getElementById('accountInfo').innerText = `已連接地址: ${address}`;
-            
+
+            // 更新餘額和最近的抵免記錄
             await updateBalance();
-            await updateRecentRedemptions(); // 添加這行
-            
+            await updateRecentRedemptions();
+
             console.log("錢包連接成功");
         } catch (error) {
-            console.error("連接錢包時發生錯誤:", error);
-            alert("連接錢包失敗: " + error.message);
+            console.error("連接錢包或切換網絡時發生錯誤:", error);
+            handleError(error, "連接錢包或切換網絡失敗");
         }
     } else {
         console.error("未檢測到 MetaMask");
@@ -51,81 +46,165 @@ async function connectWallet() {
     }
 }
 
+// 檢查網絡並切換到 Holesky 測試網
+async function checkNetwork() {
+    try {
+        const network = await web3.eth.net.getId();
+        if (network !== 17000) {  // Holesky 測試網的網絡 ID 是 17000
+            console.log("當前不是 Holesky 網絡，嘗試切換...");
+            await switchToHolesky();
+            console.log("成功切換到 Holesky 網絡");
+        } else {
+            console.log("當前已經是 Holesky 網絡");
+        }
+    } catch (error) {
+        console.error("檢查或切換網絡失敗:", error);
+        throw new Error("無法切換到 Holesky 測試網，請手動切換");
+    }
+}
+
+// 切換到 Holesky 測試網
 async function switchToHolesky() {
     try {
-        await ethereum.request({
+        await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x4268' }],
+            params: [{ chainId: '0x4268' }],  // 0x4268 是 17000 的十六進制表示
         });
-    } catch (error) {
-        if (error.code === 4902) {
-            await ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                    chainId: '0x4268',
-                    chainName: 'Holesky Testnet',
-                    nativeCurrency: {
-                        name: 'Holesky ETH',
-                        symbol: 'ETH',
-                        decimals: 18
-                    },
-                    rpcUrls: ['https://ethereum-holesky.publicnode.com'],
-                    blockExplorerUrls: ['https://holesky.etherscan.io']
-                }]
-            });
+    } catch (switchError) {
+        // 如果用戶的錢包中沒有 Holesky 網絡，我們需要添加它
+        if (switchError.code === 4902) {
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: '0x4268',
+                        chainName: 'Holesky 測試網',
+                        nativeCurrency: {
+                            name: 'Holesky ETH',
+                            symbol: 'ETH',
+                            decimals: 18
+                        },
+                        rpcUrls: ['https://ethereum-holesky.publicnode.com'],
+                        blockExplorerUrls: ['https://holesky.etherscan.io']
+                    }],
+                });
+            } catch (addError) {
+                console.error("添加 Holesky 網絡失敗:", addError);
+                throw new Error("無法添加 Holesky 測試網，請手動添加");
+            }
         } else {
-            throw error;
+            throw switchError;
         }
     }
 }
 
+// 更新用戶餘額
 async function updateBalance() {
     try {
-        const address = await signer.getAddress();
-        const balance = await contract.balanceOf(address);
-        document.getElementById('contractInfo').innerText = `代幣餘額: ${ethers.utils.formatUnits(balance, 18)}`;
+        const accounts = await web3.eth.getAccounts();
+        const address = accounts[0];
+        const balance = await contract.methods.balanceOf(address).call();
+        document.getElementById('contractInfo').innerText = `代幣餘額: ${web3.utils.fromWei(balance, 'ether')}`;
     } catch (error) {
         console.error("更新餘額失敗:", error);
     }
 }
 
+// 更新最近的抵免記錄
 async function updateRecentRedemptions() {
     try {
         const tbody = document.querySelector('#recentRedemptions tbody');
         tbody.innerHTML = '';
 
-        const filter = contract.filters.Redeemed();
-        const events = await contract.queryFilter(filter, -1000, 'latest');
-        const recentEvents = events.slice(-5).reverse();
+        // 如果沒有連接錢包，使用默認的 Web3 提供者
+        if (!web3) {
+            web3 = new Web3('https://ethereum-holesky.publicnode.com'); // 使用公共節點
+            contract = new web3.eth.Contract(contractABI, contractAddress);
+        }
 
-        for (const event of recentEvents) {
-            const { redeemer, amount, id, message } = event.args;
+        // 獲取最新的抵免ID
+        const latestId = await contract.methods.getLatestRedemptionId().call();
+        console.log("最新的抵免ID:", latestId);
+
+        const redemptions = [];
+        let currentId = latestId;
+
+        // 只獲取最新的5條記錄
+        while (redemptions.length < 5 && currentId > 0) {
+            try {
+                const result = await contract.methods.getRedemptionById(currentId).call();
+                const redeemer = result[0];
+                const amount = result[1];
+
+                const currentBlock = await web3.eth.getBlockNumber();
+                const events = await getEventsInRange('Redeemed', currentId, currentBlock);
+
+                let message = "";
+                const event = events.find(e => e.returnValues.id === currentId.toString());
+                if (event) {
+                    message = event.returnValues.message;
+                }
+
+                redemptions.push({ id: currentId, redeemer, amount, message });
+            } catch (error) {
+                console.error(`獲取抵免ID ${currentId} 的信息失敗:`, error);
+            }
+            currentId--;
+        }
+
+        // 顯示獲取到的記錄（最多5條）
+        redemptions.forEach(redemption => {
             const row = tbody.insertRow();
-            row.insertCell(0).textContent = id.toString();
-            row.insertCell(1).textContent = redeemer;
-            row.insertCell(2).textContent = ethers.utils.formatUnits(amount, 18);
-            row.insertCell(3).textContent = message;
+            row.insertCell(0).textContent = redemption.id.toString();
+            row.insertCell(1).textContent = redemption.redeemer;
+            row.insertCell(2).textContent = web3.utils.fromWei(redemption.amount, 'ether');
+            row.insertCell(3).textContent = redemption.message;
 
-            // 添加適當的 CSS 類
             row.cells[0].className = 'id-cell';
             row.cells[1].className = 'address-cell';
             row.cells[2].className = 'amount-cell';
             row.cells[3].className = 'message-cell';
-        }
+        });
+
+        console.log(`顯示了 ${redemptions.length} 條記錄`);
     } catch (error) {
         console.error("更新最近抵免記錄失敗:", error);
     }
 }
 
+// 獲取指定範圍內的事件
+async function getEventsInRange(eventName, id, currentBlock) {
+    const maxBlockRange = 50000;
+    let fromBlock = Math.max(currentBlock - maxBlockRange, 0);
+    let toBlock = currentBlock;
+    let events = [];
+
+    while (fromBlock < toBlock) {
+        try {
+            const newEvents = await contract.getPastEvents(eventName, {
+                filter: { id: id.toString() }, // 確保過濾條件正確
+                fromBlock: fromBlock,
+                toBlock: Math.min(fromBlock + maxBlockRange, toBlock)
+            });
+            events = events.concat(newEvents);
+            fromBlock += maxBlockRange;
+        } catch (error) {
+            console.error(`獲取事件 ${eventName} 時出錯:`, error);
+            break;
+        }
+    }
+
+    return events;
+}
+
+// 鑄造新代幣
 async function mint() {
     const amount = document.getElementById('mintAmount').value;
     const to = document.getElementById('mintAddress').value;
     try {
-        await checkNetwork();
-        const tx = await contract.mint(to, ethers.utils.parseUnits(amount, 18));
-        console.log("發送交易:", tx.hash);
-        await tx.wait();
-        console.log("交易確認");
+        const accounts = await web3.eth.getAccounts();
+        const tx = await contract.methods.mint(to, web3.utils.toWei(amount, 'ether')).send({ from: accounts[0] });
+        console.log("發送交易:", tx.transactionHash);
         alert('鑄造成功!');
     } catch (error) {
         console.error("鑄造失敗:", error);
@@ -133,6 +212,7 @@ async function mint() {
     }
 }
 
+// 抵免代幣
 async function redeem() {
     const amount = document.getElementById('redeemAmount').value;
     const message = document.getElementById('redeemMessage').value;
@@ -142,23 +222,22 @@ async function redeem() {
         console.log("網絡檢查通過");
         
         // 檢查用戶餘額
-        const address = await signer.getAddress();
+        const accounts = await web3.eth.getAccounts();
+        const address = accounts[0];
         console.log("用戶地址:", address);
-        const balance = await contract.balanceOf(address);
-        console.log("用戶餘額:", ethers.utils.formatUnits(balance, 18));
-        const redeemAmount = ethers.utils.parseUnits(amount, 18);
+        const balance = await contract.methods.balanceOf(address).call();
+        console.log("用戶餘額:", web3.utils.fromWei(balance, 'ether'));
+        const redeemAmount = web3.utils.toWei(amount, 'ether');
         console.log("抵免數量:", amount);
         
-        if (balance.lt(redeemAmount)) {
+        if (parseInt(balance) < parseInt(redeemAmount)) {
             throw new Error("餘額不足");
         }
         
         // 執行抵免操作
         console.log("開始執行合約的 redeem 函數");
-        const tx = await contract.redeem(redeemAmount, message);
-        console.log("抵免交易已發送:", tx.hash);
-        await tx.wait();
-        console.log("抵免交易已確認");
+        const tx = await contract.methods.redeem(redeemAmount, message).send({ from: address });
+        console.log("抵免交易已發送:", tx.transactionHash);
         
         alert('抵免成功!');
         await updateBalance();
@@ -170,31 +249,36 @@ async function redeem() {
     }
 }
 
+// 獲取抵免記錄
 async function getRedemption() {
     const id = document.getElementById('redemptionId').value;
     try {
-        const [redeemer, amount] = await contract.getRedemptionById(id);
-        document.getElementById('redemptionInfo').innerText = `抵免者: ${redeemer}, 數量: ${ethers.utils.formatUnits(amount, 18)}`;
+        if (!id || isNaN(id)) {
+            throw new Error("請輸入有效的抵免 ID");
+        }
+
+        const result = await contract.methods.getRedemptionById(id).call();
+        console.log("合約返回的結果:", result);
+
+        if (!result || result[0] === '0x0000000000000000000000000000000000000000') {
+            throw new Error("該 ID 沒有對應的抵免記錄");
+        }
+
+        const redeemer = result[0];
+        const amount = result[1];
+        document.getElementById('redemptionInfo').innerText = `抵免者: ${redeemer}, 數量: ${web3.utils.fromWei(amount, 'ether')}`;
     } catch (error) {
         console.error("查詢抵免記錄失敗:", error);
         alert('查詢失敗，請檢查 ID 是否正確。');
     }
 }
 
-// 添加檢查網絡的函數
-async function checkNetwork() {
-    const network = await provider.getNetwork();
-    if (network.chainId !== 17000) {
-        throw new Error("請切換到 Holesky 測試網");
-    }
-}
-
-// 添加錯誤處理函數
+// 錯誤處理函數
 function handleError(error, defaultMessage) {
     console.error(defaultMessage + ":", error);
     if (error.message.includes("user rejected")) {
         alert("操作被用戶取消");
-    } else if (error.message.includes("切換到 Holesky 測試網")) {
+    } else if (error.message.includes("請切換到 Holesky 測試網")) {
         alert("請確保您已連接到 Holesky 測試網");
     } else if (error.message.includes("餘額不足")) {
         alert("您的帳戶餘額不足，無法完成抵免操作");
@@ -205,7 +289,7 @@ function handleError(error, defaultMessage) {
     }
 }
 
-// 更新 DOMContentLoaded 事件監聽器
+// 頁面加載完成後執行的函數
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM 已加載，添加事件監聽器");
     const connectButton = document.getElementById('connectButton');
@@ -219,6 +303,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('redeemButton').addEventListener('click', redeem);
     document.getElementById('getRedemptionButton').addEventListener('click', getRedemption);
     document.getElementById('queryAddressButton').addEventListener('click', queryAddressRedemptions);
+
+    // 確保在頁面加載時更新最近的抵免記錄
+    updateRecentRedemptions();
 });
 
 // 定期更新最近的抵免記錄
@@ -228,7 +315,7 @@ setInterval(async () => {
     }
 }, 30000);
 
-// 新增查詢地址抵免記錄的功能
+// 查詢地址抵免記錄的功能
 async function queryAddressRedemptions() {
     const infoElement = document.getElementById('addressRedemptionInfo');
     infoElement.innerText = "正在查詢...";
@@ -236,12 +323,12 @@ async function queryAddressRedemptions() {
         await checkNetwork();
         const addressToQuery = document.getElementById('addressToQuery').value;
 
-        if (!ethers.utils.isAddress(addressToQuery)) {
+        if (!web3.utils.isAddress(addressToQuery)) {
             throw new Error("無效的以太坊地址");
         }
 
-        // 首先獲取指定地址的所有抵免ID
-        const redemptionIds = await contract.getRedemptionIdsByAddress(addressToQuery);
+        // 獲取指定地址的所有抵免ID
+        const redemptionIds = await contract.methods.getRedemptionIdsByAddress(addressToQuery).call();
         
         if (redemptionIds.length === 0) {
             infoElement.innerText = "該地址沒有抵免記錄";
@@ -251,8 +338,10 @@ async function queryAddressRedemptions() {
         let redemptionDetails = "";
         // 遍歷每個抵免ID並獲取詳細信息
         for (const id of redemptionIds) {
-            const [redeemer, amount] = await contract.getRedemptionById(id);
-            redemptionDetails += `抵免ID: ${id}, 抵免者: ${redeemer}, 數量: ${ethers.utils.formatUnits(amount, 18)}\n`;
+            const result = await contract.methods.getRedemptionById(id).call();
+            const redeemer = result[0];
+            const amount = result[1];
+            redemptionDetails += `抵免ID: ${id}, 抵免者: ${redeemer}, 數量: ${web3.utils.fromWei(amount, 'ether')}\n`;
         }
 
         infoElement.innerText = redemptionDetails;

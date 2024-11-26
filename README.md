@@ -2,8 +2,8 @@
 
 ## 網頁預覽
 
-https://blockchain-carbon-credit-trading.netlify.app/
-https://skyblue2016219.github.io/blockchain-carbon-credit-trading-system/
+- https://blockchain-carbon-credit-trading.netlify.app/
+- https://skyblue2016219.github.io/blockchain-carbon-credit-trading-system/
 
 ## 專案簡介
 

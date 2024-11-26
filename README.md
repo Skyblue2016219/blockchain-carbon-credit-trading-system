@@ -1,5 +1,9 @@
 # 基於區塊鏈之碳權交易系統
+
+##網頁預覽
+https://blockchain-carbon-credit-trading.netlify.app/
 https://skyblue2016219.github.io/blockchain-carbon-credit-trading-system/
+
 ## 專案簡介
 
 這是一個基於以太坊區塊鏈的碳權交易系統,旨在為碳權交易提供一個透明、高效的平台。本系統運行在以太坊 Holesky 測試網上,實現了碳權代幣的發行、交易、抵免等核心功能。
